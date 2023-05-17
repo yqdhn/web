@@ -102,6 +102,33 @@ class GetBooking(APIView):
             Response(status=status.HTTP_404_NOT_FOUND)
         except Exception:
             return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        
+    def put(self, request, *args, **kwargs):
+        try:
+            booking = Booking.objects.get(id=kwargs.get('booking_id'))
+
+            # Update departure_datetime
+            departure_datetime = request.data.get('departure_datetime')
+            if departure_datetime:
+                booking.flight.departure_datetime = departure_datetime
+                booking.flight.save()
+
+            # Update customer details
+            customer_data = request.data.get('customer')
+            if customer_data:
+                customer_id = customer_data.get('customer_id')
+                if customer_id:
+                    # Update customer
+                    update_fields = {field: value for field, value in customer_data.items() if field != 'customer_id'}
+                    Customer.objects.filter(id=customer_id).update(**update_fields)
+                    
+            return Response(status=status.HTTP_200_OK)
+        except Booking.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Customer.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception:
+            return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 class ConfirmBooking(APIView):
     def put(self, request, *args, **kwargs):
@@ -122,38 +149,6 @@ class ConfirmBooking(APIView):
                     'tickets': ticket_serializer.data
                 }, status=status.HTTP_200_OK)
         except Booking.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except Exception:
-            return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
-
-
-## still have issue :<
-class UpdateBooking(APIView):
-    def put(self, request, *args, **kwargs):
-        try:
-            booking = Booking.objects.get(id=kwargs.get('booking_id'))
-
-            # Update departure_datetime
-            departure_datetime = request.data.get('departure_datetime')
-            if departure_datetime:
-                booking.flight.departure_datetime = departure_datetime
-                booking.flight.save()
-
-            # Update customer details
-            customer_data = request.data.get('customer')
-            if customer_data:
-                for customer_info in customer_data:
-                    customer_id = customer_info.get('customer_id')
-                    if customer_id:
-                        customer = Customer.objects.get(id=customer_id)
-                        # Update customer
-                        update_fields = {field: value for field, value in customer_info.items() if field != 'customer_id'}
-                        Customer.objects.filter(id=customer_id).update(**update_fields)
-                    
-            return Response(status=status.HTTP_200_OK)
-        except Booking.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        except Customer.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         except Exception:
             return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)

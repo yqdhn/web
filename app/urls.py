@@ -26,7 +26,6 @@ urlpatterns = [
     path('api/book', BookFlight.as_view(), name='book-flight'),
     path('api/booking/<int:booking_id>', GetBooking.as_view(), name='get-booking'),
     path('api/confirmbooking', ConfirmBooking.as_view(), name='confirm-booking'),
-    path('api/booking/<int:booking_id>', UpdateBooking.as_view(), name='confirm-booking'),
     path('api/cancelbooking', CancelBooking.as_view(), name='cancel-booking'),
     path('api/paymentproviders', GetPSP.as_view(), name='payment-providers'),
 ]
